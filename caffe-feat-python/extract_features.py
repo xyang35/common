@@ -1,19 +1,25 @@
+import pdb
 import sys
 import os.path
 import argparse
 
 import numpy as np
 from scipy.misc import imread, imresize
-import scipy.io
 
 import cPickle as pickle
+import h5py
+
+caffe_root = '/home/xyang/caffe/'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--caffe',
+		    default=caffe_root,
                     help='path to caffe installation')
 parser.add_argument('--model_def',
+		    default=caffe_root+'models/bvlc_googlenet/deploy_features.prototxt',
                     help='path to model definition prototxt')
 parser.add_argument('--model',
+		    default=caffe_root+'models/bvlc_googlenet/bvlc_googlenet.caffemodel',
                     help='path to model parameters')
 parser.add_argument('--files',
                     help='path to a file contsining a list of images')
@@ -89,7 +95,7 @@ def batch_predict(filenames, net):
         ftrs = predict(in_data, net)
 
         for j in range(len(batch_range)):
-            allftrs[i+j,:] = ftrs[j,:]
+            allftrs[i+j,:] = np.squeeze(ftrs[j,:])
 
         print 'Done %d/%d files' % (i+len(batch_range), len(filenames))
 
@@ -115,7 +121,8 @@ allftrs = batch_predict(filenames, net)
 
 if args.out:
     # store the features in a pickle file
-    with open(args.out, 'w') as fp:
-        pickle.dump(allftrs, fp)
+#    with open(args.out, 'w') as fp:
+#        pickle.dump(allftrs, fp)
+    f = h5py.File(args.out, 'w')
+    dset = f.create_dataset("features", data=allftrs, dtype='float32')
 
-scipy.io.savemat(os.path.join(base_dir, 'vgg_feats.mat'), mdict =  {'feats': np.transpose(allftrs)})
