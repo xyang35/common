@@ -1,0 +1,8 @@
+[blas]
+ldflags = -L/usr/lib/atalas-base/atlas -latlas -lcblas -lclapack -lf77blas -llapack -lptcblas -lptf77blas
+
+[global]
+device = gpu
+floatX = float32
+[nvcc]
+fastmath = True
